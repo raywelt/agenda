@@ -440,8 +440,14 @@
     } catch (err) {
       if (initial) {
         console.warn("No se pudo cargar la agenda:", err);
-        els.status.textContent = "";
-        els.loader.hidden = false;
+        // La carga manual del Excel solo existe al abrir la página como archivo
+        // local (doble clic). En el sitio publicado nunca se muestra.
+        if (location.protocol === "file:") {
+          els.status.textContent = "";
+          els.loader.hidden = false;
+        } else {
+          els.status.textContent = "No se pudo cargar la agenda. Recarga la página en unos minutos.";
+        }
       }
     }
   }
