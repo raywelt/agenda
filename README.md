@@ -3,7 +3,9 @@
 Página web que muestra la programación de la **XIV Semana Nacional y VI Internacional de la Educación — Educación Expandida** (Colombia, 19 al 24 de octubre de 2026) como calendario, un día a la vez.
 
 - Abre automáticamente el día de hoy o el próximo día con programación. En el día en curso, los eventos que ya terminaron se pliegan y se marcan los que están **en curso** y los **próximos** (hora de Colombia).
-- Filtros por **formato, modalidad, sede y lugar**, más un buscador por texto (evento, ponente…).
+- Filtros por **formato, modalidad, centro universitario y lugar**, más un buscador por texto (evento, ponente…).
+- Cifras destacadas bajo el banner (se editan en `index.html`, sección `stats`).
+- El recuadro de horas de cada evento toma el color de su centro universitario; los colores están en `CENTRO_COLORS`, al inicio de `app.js`.
 - Banner horizontal en escritorio y pieza 1x1 en móvil.
 - Los filtros y el día quedan en el enlace (`#dia=2026-10-21&sede=calle 80`), así se puede compartir una vista filtrada.
 
@@ -17,7 +19,7 @@ La página lee **`data/AgendaPlana.xlsx` directamente**; no hay que convertir na
 Reglas para que el Excel se lea bien:
 
 - Puede tener una hoja por día (como ahora) o todo en una sola hoja; se leen todas.
-- La fila de encabezados debe tener las columnas `DÍA`, `HORA INICIO`, `HORA FINAL`, `EVENTO`, `LUGAR`, `SEDE`, `FORMATO`, `MODALIDAD` (el orden no importa; mayúsculas y tildes tampoco).
+- La fila de encabezados debe tener las columnas `DÍA`, `HORA INICIO`, `HORA FINAL`, `EVENTO`, `LUGAR`, `CENTRO UNIVERSITARIO` (o `SEDE`), `FORMATO`, `MODALIDAD` (el orden no importa; mayúsculas y tildes tampoco).
 - `DÍA` como fecha de Excel (o texto `19/10/2026`); las horas como hora de Excel (o texto `2:30 pm`). Usa formato de 24 h o indica a. m./p. m.: una hora `3:45` se interpreta como 3:45 de la madrugada.
 - En `EVENTO`, la primera línea es el título y las siguientes (Alt+Enter) son los detalles: ponentes, institución, enlaces.
 - Las filas "Receso", "Almuerzo" o "Coffee Break" sin formato se muestran como pausas.

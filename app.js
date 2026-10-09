@@ -11,6 +11,19 @@
   const POLL_MS = 60 * 1000;
   const TIME_ZONE = "America/Bogota";
   const FILTERS = ["formato", "modalidad", "sede", "lugar"];
+  // Color del recuadro de horas por centro universitario (clave sin tildes, en minúsculas).
+  // Un centro nuevo que aparezca en el Excel toma el siguiente color libre de EXTRA_COLORS.
+  const CENTRO_COLORS = {
+    "calle 80": "#5c7a56",
+    "zipaquira": "#dc191f",
+    "madrid": "#e25a26",
+    "perdomo": "#3f6b78",
+    "soacha": "#8a4b2a",
+    "san camilo": "#9a6b12",
+    "girardot": "#6b3d5a",
+  };
+  const EXTRA_COLORS = ["#2f5d50", "#a3412f", "#55597a", "#7a6a2f", "#7d4e6b"];
+  const OTHER_COLOR = "#31322d";
   const BREAK_RE = /^(receso|almuerzo|coffee\s*break|refrigerio|descanso|break)\b/i;
 
   const DOW = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -22,7 +35,7 @@
     days: $("days"), dayHead: $("dayHead"), events: $("events"), status: $("status"),
     loader: $("loader"), fileInput: $("fileInput"), updated: $("updated"), toast: $("toast"),
     q: $("q"), clear: $("clearFilters"), toggle: $("filtersToggle"), filters: $("filters"),
-    filtersCount: $("filtersCount"),
+    filtersCount: $("filtersCount"), legend: $("legend"),
     selects: Object.fromEntries(FILTERS.map((f) => [f, $("f-" + f)])),
   };
 
@@ -34,6 +47,7 @@
     filters: { formato: "", modalidad: "", sede: "", lugar: "" },
     q: "",
     showPast: false,   // en el día actual, los eventos terminados se pliegan
+    centroColors: {},
     hash: null,
     loadedAt: null,
   };
@@ -128,7 +142,7 @@
     if (h.startsWith("hora")) return /(final|fin|termin)/.test(h) ? "fin" : "inicio";
     if (h.startsWith("evento") || h.startsWith("actividad")) return "evento";
     if (h.startsWith("lugar")) return "lugar";
-    if (h.startsWith("sede")) return "sede";
+    if (h.startsWith("sede") || h.startsWith("centro")) return "sede";
     if (h.startsWith("formato")) return "formato";
     if (h.startsWith("modalidad")) return "modalidad";
     return null;
@@ -190,8 +204,19 @@
         .map(([key, label]) => ({ key, label }))
         .sort((a, b) => a.label.localeCompare(b.label, "es"));
     });
+    // Asigna colores: los centros conocidos usan su color fijo; los nuevos, uno libre.
+    // Lo que no es un centro (direcciones, "Virtual") queda en gris oscuro.
+    let extra = 0;
+    state.centroColors = {};
+    options.sede.forEach((o) => {
+      if (CENTRO_COLORS[o.key]) state.centroColors[o.key] = CENTRO_COLORS[o.key];
+      else if (o.key === "virtual" || /\d|#/.test(o.key)) state.centroColors[o.key] = OTHER_COLOR;
+      else state.centroColors[o.key] = EXTRA_COLORS[extra++ % EXTRA_COLORS.length];
+    });
     return options;
   }
+
+  const centroColor = (key) => (key && state.centroColors[key]) || OTHER_COLOR;
 
   function sortEvents(a, b) {
     return a.date.localeCompare(b.date)
@@ -302,7 +327,7 @@
     const state_ = live ? "En curso" : past ? "Finalizado" : ev._next ? "Próximo" : "";
     const meta = [
       ev.lugar && `<span><b>Lugar</b> ${esc(ev.lugar)}</span>`,
-      ev.sede && `<span><b>Sede</b> ${esc(ev.sede)}</span>`,
+      ev.sede && `<span><b>Centro Universitario</b> ${esc(ev.sede)}</span>`,
     ].filter(Boolean).join("");
     const chips = [
       ev.formato && `<span class="chip ${chipClass(ev.formatoKey)}">${esc(ev.formato)}</span>`,
@@ -310,7 +335,7 @@
     ].filter(Boolean).join("");
 
     return `<li class="event${live ? " is-now" : ""}${past ? " is-past" : ""}${ev._next ? " is-next" : ""}">
-      <div class="time">
+      <div class="time" style="--centro: ${centroColor(ev.sedeKey)}">
         <span class="start">${fmtTime(ev.start) || "—"}</span>
         ${ev.end != null ? `<span class="end">a ${fmtTime(ev.end)}</span>` : ""}
         ${state_ ? `<span class="state">${state_}</span>` : ""}
@@ -345,6 +370,18 @@
       ? `<h1>${esc(dayLabel(state.day))}</h1>
          <span class="summary">${real.length} ${real.length === 1 ? "evento" : "eventos"}${hasActiveFilters() ? " con los filtros aplicados" : ""}</span>`
       : "";
+
+    // Leyenda de colores: centros con eventos este día (clic = filtrar por ese centro).
+    const centros = new Map();
+    state.events.forEach((ev) => {
+      if (ev.date === state.day && !ev.isBreak && ev.sedeKey && centroColor(ev.sedeKey) !== OTHER_COLOR) centros.set(ev.sedeKey, ev.sede);
+    });
+    els.legend.innerHTML = [...centros.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1], "es"))
+      .map(([key, label]) => `<button type="button" data-centro="${esc(key)}"
+        aria-pressed="${state.filters.sede === key}" style="--centro: ${centroColor(key)}">
+        <i aria-hidden="true"></i>${esc(label)}</button>`).join("");
+    els.legend.hidden = centros.size === 0;
 
     // Si es hoy, primero lo que está en curso y lo que viene; lo terminado se pliega.
     const isPast = (ev) => ev.date === now.date && ev.end != null && ev.end <= now.min;
@@ -461,6 +498,13 @@
   els.events.addEventListener("click", (e) => {
     if (!e.target.closest("[data-past]")) return;
     state.showPast = !state.showPast;
+    render();
+  });
+
+  els.legend.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-centro]");
+    if (!b) return;
+    state.filters.sede = state.filters.sede === b.dataset.centro ? "" : b.dataset.centro;
     render();
   });
 
