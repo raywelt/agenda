@@ -38,6 +38,44 @@ body {
   height: auto;
 }
 
+/* ---------- Cifras bajo el banner ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px var(--gutter);
+  padding-block: 22px;
+  padding-inline: var(--gutter);
+  background: var(--cream);
+  border-top: 3px solid var(--ink);
+}
+.stats p {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+.stats strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(56px, 8vw, 104px);
+  line-height: .9;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+.stats p:nth-child(2) strong { color: var(--sage); }
+.stats p:nth-child(3) strong { color: var(--orange); }
+.stats span {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.4vw, 32px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-wrap: balance;
+  max-width: 9em;
+}
+
 /* ---------- Controles (días + filtros) ---------- */
 .controls {
   position: sticky;
@@ -165,6 +203,24 @@ body {
 }
 .day-head .summary { font-weight: 700; color: var(--ink-soft); }
 
+.legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: -4px 0 16px; }
+.legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 13px var(--font-body);
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 20px;
+  padding: 4px 10px 4px 6px;
+  cursor: pointer;
+}
+.legend button i { width: 14px; height: 14px; border-radius: 3px; background: var(--centro); }
+.legend button:hover { border-color: var(--line); }
+.legend button[aria-pressed="true"] { background: var(--centro); border-color: var(--centro); color: #fff; }
+.legend button[aria-pressed="true"] i { background: #fff; }
+
 .status { color: var(--ink-soft); }
 .status:empty { display: none; }
 .status .suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -188,7 +244,7 @@ body {
   overflow: hidden;
 }
 .event .time {
-  background: var(--ink);
+  background: var(--centro, var(--ink));
   color: var(--cream);
   padding: 14px 12px;
   font-family: var(--font-display);
@@ -221,11 +277,9 @@ body {
 .event .meta b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--sage-dark); }
 
 .event.is-now { border-color: var(--red); box-shadow: 4px 4px 0 var(--red); }
-.event.is-now .time { background: var(--red); }
-.event.is-now .time .state { background: var(--cream); color: var(--red); }
+.event .time .state { background: var(--paper); color: var(--ink); }
+.event.is-now .time .state { color: var(--red); }
 .event.is-past { opacity: .6; }
-.event.is-past .time .state { background: var(--ink-soft); }
-.event.is-next .time .state { background: var(--orange); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
@@ -336,6 +390,11 @@ body {
 
 /* ---------- Móvil ---------- */
 @media (max-width: 720px) {
+  .stats { gap: 8px; padding-block: 16px; }
+  .stats p { flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+  .stats strong { font-size: 44px; }
+  .stats span { font-size: 14px; }
+
   .days { padding-top: 10px; gap: 5px; }
   .day-btn { min-width: 64px; padding: 5px 6px 3px; }
   .day-btn .num { font-size: 24px; }

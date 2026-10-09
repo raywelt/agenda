@@ -18,6 +18,12 @@
     </picture>
   </header>
 
+  <section class="stats" aria-label="La Semana en cifras">
+    <p><strong>167</strong> <span>eventos</span></p>
+    <p><strong>23</strong> <span>invitados internacionales</span></p>
+    <p><strong>7</strong> <span>Centros Universitarios</span></p>
+  </section>
+
   <div class="controls" id="controls">
     <nav class="days" id="days" aria-label="Días del evento"></nav>
     <div class="filters-bar">
@@ -31,7 +37,7 @@
         </label>
         <label><span>Formato</span><select id="f-formato"></select></label>
         <label><span>Modalidad</span><select id="f-modalidad"></select></label>
-        <label><span>Sede</span><select id="f-sede"></select></label>
+        <label><span>Centro Universitario</span><select id="f-sede"></select></label>
         <label><span>Lugar</span><select id="f-lugar"></select></label>
         <button type="button" class="clear" id="clearFilters">Limpiar</button>
       </form>
@@ -40,6 +46,7 @@
 
   <main class="main">
     <div class="day-head" id="dayHead"></div>
+    <div class="legend" id="legend" aria-label="Colores por centro universitario" hidden></div>
     <div id="status" class="status" role="status" aria-live="polite">Cargando agenda…</div>
     <ol class="events" id="events"></ol>
     <div class="loader" id="loader" hidden>
