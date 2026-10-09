@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda · Semana de la Educación 2026</title>
+  <meta name="description" content="Programación de la XIV Semana Nacional y VI Internacional de la Educación — Educación Expandida. Colombia, 19 al 24 de octubre de 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <picture>
+      <source media="(max-width: 720px)" srcset="assets/pieza1x1.jpg">
+      <img src="assets/banner.jpg" alt="Semana de la Educación — XIV Semana Nacional y VI Internacional de la Educación. Educación Expandida: creatividad, inclusión y tecnología para hackear el futuro. Colombia, octubre 19 al 24 de 2026." width="2000" height="521">
+    </picture>
+  </header>
+
+  <div class="controls" id="controls">
+    <nav class="days" id="days" aria-label="Días del evento"></nav>
+    <div class="filters-bar">
+      <button type="button" class="filters-toggle" id="filtersToggle" aria-expanded="false" aria-controls="filters">
+        Filtros <span class="badge" id="filtersCount" hidden></span>
+      </button>
+      <form class="filters" id="filters" onsubmit="return false">
+        <label class="search">
+          <span>Buscar</span>
+          <input type="search" id="q" placeholder="Evento, ponente…" autocomplete="off">
+        </label>
+        <label><span>Formato</span><select id="f-formato"></select></label>
+        <label><span>Modalidad</span><select id="f-modalidad"></select></label>
+        <label><span>Sede</span><select id="f-sede"></select></label>
+        <label><span>Lugar</span><select id="f-lugar"></select></label>
+        <button type="button" class="clear" id="clearFilters">Limpiar</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="main">
+    <div class="day-head" id="dayHead"></div>
+    <div id="status" class="status" role="status" aria-live="polite">Cargando agenda…</div>
+    <ol class="events" id="events"></ol>
+    <div class="loader" id="loader" hidden>
+      <p>No se pudo leer <code>data/AgendaPlana.xlsx</code> automáticamente
+        (pasa cuando la página se abre como archivo, sin servidor local).</p>
+      <label class="file-btn">Cargar AgendaPlana.xlsx
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+      </label>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p><strong>Educación Expandida</strong> — Creatividad, inclusión y tecnología para hackear el futuro.</p>
+    <p class="muted" id="updated"></p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
