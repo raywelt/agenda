@@ -239,7 +239,7 @@
     if (state.day) p.set("dia", state.day);
     FILTERS.forEach((f) => { if (state.filters[f]) p.set(f, state.filters[f]); });
     if (state.q) p.set("q", state.q);
-    history.replaceState(null, "", "#" + p.toString());
+    try { history.replaceState(null, "", "#" + p.toString()); } catch (e) { /* entorno sin historial */ }
   }
 
   // Día por defecto: hoy si hay programación; si no, el próximo día con eventos;
@@ -411,7 +411,24 @@
     return res.arrayBuffer();
   }
 
+  // Versión de un solo archivo (vista previa): el Excel viene incrustado en base64.
+  function embeddedData() {
+    const b64 = window.AGENDA_XLSX_BASE64;
+    if (!b64) return null;
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+
   async function load(initial) {
+    const embedded = initial && embeddedData();
+    if (embedded) {
+      state.hash = "embedded";
+      applyWorkbook(embedded, "AgendaPlana.xlsx");
+      return;
+    }
+    if (state.hash === "embedded") return;
     try {
       const buf = await fetchData();
       const h = hashBytes(buf);
@@ -473,11 +490,12 @@
     els.toggle.setAttribute("aria-expanded", String(open));
   });
 
-  els.fileInput.addEventListener("change", async (e) => {
+  document.querySelectorAll(".xlsx-input").forEach((input) => input.addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     applyWorkbook(await file.arrayBuffer(), file.name);
-  });
+    showToast("Agenda cargada desde " + file.name);
+  }));
 
   // Teclado: flechas izquierda/derecha cambian de día.
   document.addEventListener("keydown", (e) => {
