@@ -272,6 +272,20 @@ body {
 }
 .event .details { margin: 0 0 8px; color: var(--ink-soft); font-size: 14.5px; white-space: pre-line; overflow-wrap: anywhere; }
 .event .details a { color: var(--sage-dark); font-weight: 700; }
+.access-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  background: var(--red);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.access-link:hover { background: var(--ink); }
 .event .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; }
 .event .meta span { display: inline-flex; align-items: center; gap: 4px; }
 .event .meta b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--sage-dark); }

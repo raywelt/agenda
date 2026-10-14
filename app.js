@@ -66,6 +66,14 @@
   const linkify = (html) => html.replace(/https?:\/\/[^\s<]+[^\s<.,;:)]/g,
     (u) => `<a href="${u}" target="_blank" rel="noopener">${u.length > 60 ? u.slice(0, 57) + "…" : u}</a>`);
 
+  // Solo enlaces web (http/https); "www.…" se completa con https://.
+  const safeUrl = (v) => {
+    const s = clean(v);
+    if (!s) return "";
+    const url = /^www\./i.test(s) ? "https://" + s : s;
+    return /^https?:\/\/\S+$/i.test(url) ? url : "";
+  };
+
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
   const pad = (n) => String(n).padStart(2, "0");
@@ -145,6 +153,7 @@
     if (h.startsWith("sede") || h.startsWith("centro")) return "sede";
     if (h.startsWith("formato")) return "formato";
     if (h.startsWith("modalidad")) return "modalidad";
+    if (h.startsWith("link") || h.startsWith("enlace") || h.startsWith("url")) return "link";
     return null;
   }
 
@@ -152,7 +161,24 @@
     const wb = XLSX.read(buf, { type: "array" });
     const rows = [];
     wb.SheetNames.forEach((name, sheetIdx) => {
-      const data = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: null, blankrows: false });
+      const ws = wb.Sheets[name];
+      if (!ws["!ref"]) return;
+      // blankrows: true mantiene la correspondencia fila de datos ↔ fila de la hoja,
+      // necesaria para leer el hipervínculo de la celda LINK.
+      // Celdas combinadas (p. ej. un mismo LINK o LUGAR para varias filas):
+      // cada fila del bloque toma el valor de la celda superior izquierda.
+      (ws["!merges"] || []).forEach((m) => {
+        const top = ws[XLSX.utils.encode_cell(m.s)];
+        if (!top) return;
+        for (let r = m.s.r; r <= m.e.r; r++) {
+          for (let c = m.s.c; c <= m.e.c; c++) {
+            const addr = XLSX.utils.encode_cell({ r, c });
+            if (!ws[addr] || ws[addr].v == null) ws[addr] = Object.assign({}, top);
+          }
+        }
+      });
+      const origin = XLSX.utils.decode_range(ws["!ref"]).s;
+      const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: true });
       const headerIdx = data.findIndex((r) => r && r.some((c) => columnFor(c) === "evento"));
       if (headerIdx < 0) return;
       const cols = {};
@@ -162,7 +188,12 @@
       });
       let lastDate = null;
       data.slice(headerIdx + 1).forEach((r, i) => {
+        if (!r) return;
         const get = (k) => (k in cols ? r[cols[k]] : null);
+        // La celda puede tener el enlace como texto o como hipervínculo de Excel.
+        const linkCell = "link" in cols
+          ? ws[XLSX.utils.encode_cell({ r: origin.r + headerIdx + 1 + i, c: origin.c + cols.link })]
+          : null;
         const text = String(get("evento") ?? "").replace(/\r/g, "").trim();
         if (!text) return;
         const date = parseDate(get("dia")) || lastDate;
@@ -180,6 +211,7 @@
           sede: cap(clean(get("sede")).replace(/\s*\n\s*/g, " ")),
           formato: cap(clean(get("formato"))),
           modalidad: cap(clean(get("modalidad"))),
+          link: safeUrl((linkCell && linkCell.l && linkCell.l.Target) || get("link")),
         };
         ev.isBreak = BREAK_RE.test(ev.title) && !ev.formato;
         rows.push(ev);
@@ -345,6 +377,9 @@
         <h2>${esc(ev.title)}</h2>
         ${ev.details ? `<p class="details">${linkify(esc(ev.details))}</p>` : ""}
         ${meta ? `<div class="meta">${meta}</div>` : ""}
+        ${ev.link ? `<a class="access-link" href="${esc(ev.link)}" target="_blank" rel="noopener">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          Link de acceso</a>` : ""}
       </div>
     </li>`;
   }
