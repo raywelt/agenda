@@ -19,8 +19,9 @@ La página lee **`data/AgendaPlana.xlsx` directamente**; no hay que convertir na
 Reglas para que el Excel se lea bien:
 
 - Puede tener una hoja por día (como ahora) o todo en una sola hoja; se leen todas.
-- La fila de encabezados debe tener las columnas `DÍA`, `HORA INICIO`, `HORA FINAL`, `EVENTO`, `LUGAR`, `CENTRO UNIVERSITARIO` (o `SEDE`), `FORMATO`, `MODALIDAD` (el orden no importa; mayúsculas y tildes tampoco).
+- La fila de encabezados debe tener las columnas `DÍA`, `HORA INICIO`, `HORA FINAL`, `EVENTO`, `LUGAR`, `CENTRO UNIVERSITARIO` (o `SEDE`), `FORMATO`, `MODALIDAD` y, opcional, `LINK` (el orden no importa; mayúsculas y tildes tampoco).
 - `DÍA` como fecha de Excel (o texto `19/10/2026`); las horas como hora de Excel (o texto `2:30 pm`). Usa formato de 24 h o indica a. m./p. m.: una hora `3:45` se interpreta como 3:45 de la madrugada.
+- En `LINK` va el enlace de conexión (Teams, Zoom…) de los eventos híbridos o virtuales; la página muestra el botón «Link de acceso». Si está vacío, no aparece. Una celda combinada sobre varias filas aplica el mismo enlace a todas ellas.
 - En `EVENTO`, la primera línea es el título y las siguientes (Alt+Enter) son los detalles: ponentes, institución, enlaces.
 - Las filas "Receso", "Almuerzo" o "Coffee Break" sin formato se muestran como pausas.
 - Valores que solo difieren en mayúsculas o tildes ("Por confirmar" / "Por Confirmar") se agrupan en el mismo filtro.
